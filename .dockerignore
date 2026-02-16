@@ -1,0 +1,8 @@
+bin/
+obj/
+*.png
+*.jpg
+.vs/
+.vscode/
+*.user
+*.suo

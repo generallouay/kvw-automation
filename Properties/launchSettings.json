@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "KlikVoorWonen": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "KLIKVOORWONEN_USERNAME": "general_louay",
+        "KLIKVOORWONEN_PASSWORD": "5i@T4^udV963)<hH33G:J=M2mjEY-s",
+        "HEADLESS": "false"
+      }
+    }
+  }
+}
