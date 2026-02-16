@@ -1,0 +1,43 @@
+name: KlikVoorWonen Automation
+
+on:
+  schedule:
+    - cron: '0 16 * * *'  # 5 PM Dutch time (UTC+1)
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+          cache: true  # ← caches NuGet packages automatically
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1148
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pwsh bin/Release/net8.0/playwright.ps1 install chromium
+
+      - name: Run automation
+        env:
+          KLIKVOORWONEN_USERNAME: ${{ secrets.KLIKVOORWONEN_USERNAME }}
+          KLIKVOORWONEN_PASSWORD: ${{ secrets.KLIKVOORWONEN_PASSWORD }}
+          HEADLESS: "true"
+        run: dotnet run --configuration Release
