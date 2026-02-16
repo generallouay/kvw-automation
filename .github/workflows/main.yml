@@ -2,8 +2,8 @@ name: KlikVoorWonen Automation
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # Runs every day at 8:00 AM UTC
-  workflow_dispatch:       # Also allows manual trigger from GitHub
+    - cron: '0 16 * * *'  # 5 PM Dutch time (UTC+1)
+  workflow_dispatch:
 
 jobs:
   run:
@@ -16,6 +16,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
+          cache: true  # ← caches NuGet packages automatically
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1148
 
       - name: Install dependencies
         run: dotnet restore
@@ -24,6 +32,7 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pwsh bin/Release/net8.0/playwright.ps1 install chromium
 
       - name: Run automation
