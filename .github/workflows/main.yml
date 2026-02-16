@@ -1,0 +1,34 @@
+name: KlikVoorWonen Automation
+
+on:
+  schedule:
+    - cron: '0 17 * * *'  # Runs every day at 8:00 AM UTC
+  workflow_dispatch:       # Also allows manual trigger from GitHub
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh bin/Release/net8.0/playwright.ps1 install chromium
+
+      - name: Run automation
+        env:
+          KLIKVOORWONEN_USERNAME: ${{ secrets.KLIKVOORWONEN_USERNAME }}
+          KLIKVOORWONEN_PASSWORD: ${{ secrets.KLIKVOORWONEN_PASSWORD }}
+          HEADLESS: "true"
+        run: dotnet run --configuration Release
