@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set date
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - uses: actions/checkout@v4
 
       - name: Setup .NET
@@ -40,4 +42,17 @@ jobs:
           KLIKVOORWONEN_USERNAME: ${{ secrets.KLIKVOORWONEN_USERNAME }}
           KLIKVOORWONEN_PASSWORD: ${{ secrets.KLIKVOORWONEN_PASSWORD }}
           HEADLESS: "true"
-        run: dotnet run --configuration Release
+        run: dotnet run --configuration Release 2>&1 | tee automation.log
+      - name: Send screenshot email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_FROM }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "KlikVoorWonen Daily Run - ${{ job.status }}"
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+          body: "KlikVoorWonen automation completed with status: ${{ job.status }}"
+          attachments: final-state.png,automation.log
