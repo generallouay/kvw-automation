@@ -145,6 +145,12 @@ class Program
                         alreadyReactedCount++;
                         continue;
                     }
+                    if (sectionText?.Contains("Motivatie") == true)
+                    {
+                        Console.WriteLine($"  [{i + 1}/{propertySections.Count}] Motivation - skipping");
+                        alreadyReactedCount++;
+                        continue;
+                    }
 
                     // Get the link to the property detail page
                     var linkElement = await section.QuerySelectorAsync("a[ng-href*='/details/']");
