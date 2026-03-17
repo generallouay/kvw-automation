@@ -1,48 +1,53 @@
 name: KlikVoorWonen Automation
 on:
   schedule:
-    - cron: '0 16 * * *'  # 5 PM Dutch time (UTC+1)
+    - cron: '0 16 * * *'
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # silence Node 20 deprecation
+
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Set date
-        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
           cache: true
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-1148
-      - name: Install dependencies
-        run: dotnet restore
-      - name: Build
+
+      - name: Build                          # restore is implicit here
         run: dotnet build --configuration Release
+
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pwsh bin/Release/net8.0/playwright.ps1 install chromium
+
       - name: Run automation
         env:
           KLIKVOORWONEN_USERNAME: ${{ secrets.KLIKVOORWONEN_USERNAME }}
           KLIKVOORWONEN_PASSWORD: ${{ secrets.KLIKVOORWONEN_PASSWORD }}
           HEADLESS: "true"
-        run: dotnet run --configuration Release 2>&1 | tee automation.log
+        run: dotnet run --configuration Release --no-build 2>&1 | tee automation.log
 
-      - name: Read log into env         # ← NEW
+      - name: Read log into env
         if: always()
         run: |
           echo "LOG_CONTENT<<EOF" >> $GITHUB_ENV
           cat automation.log >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Send screenshot email
+      - name: Send email
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
@@ -52,10 +57,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "KlikVoorWonen Daily Run - ${{ job.status }}"
           to: ${{ secrets.EMAIL_TO }}
-          from: "KlikVoorWonen Bot <${{ secrets.EMAIL_FROM }}>"    # ← display name
-          body: |                                                   # ← log in body
-            KlikVoorWonen automation completed with status: ${{ job.status }}
-
-            --- Log output ---
+          from: "KlikVoorWonen Bot <${{ secrets.EMAIL_FROM }}>"
+          body: |
             ${{ env.LOG_CONTENT }}
-          attachments: final-state.png   # ← screenshot only, no log attachment
+          attachments: final-state.png
