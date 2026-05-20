@@ -108,6 +108,7 @@ class Program
                 if (propertySections.Count > 0)
                 {
                     Console.WriteLine($"Found {propertySections.Count} properties on the page (attempt {retryCount + 1})");
+                    await Task.Delay(2000); // Wait for Angular to finish rendering links
                     break;
                 }
 
@@ -216,6 +217,7 @@ class Program
 
                         if (currentSections.Count > 0)
                         {
+                            await Task.Delay(2000); // Wait for Angular to finish rendering links
                             break;
                         }
 
@@ -248,6 +250,7 @@ class Program
 
                             if (currentSections.Count > 0)
                             {
+                                await Task.Delay(2000); // Wait for Angular to finish rendering links
                                 break;
                             }
 

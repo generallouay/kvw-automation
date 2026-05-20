@@ -30,7 +30,7 @@ dotnet build
 
 echo ""
 echo "Step 3: Installing Playwright browsers..."
-pwsh bin/Debug/net8.0/playwright.ps1 install chromium
+powershell bin/Debug/net8.0/playwright.ps1 install chromium
 
 echo ""
 echo "Step 4: Running automation (browser will be visible)..."
@@ -39,3 +39,4 @@ dotnet run
 
 echo ""
 echo "=== Test Complete ==="
+read -p "Press Enter to close..."
